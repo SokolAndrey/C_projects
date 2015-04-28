@@ -82,7 +82,7 @@ void server(int port_number) {
 			printf("\n Received:%s", req);
 			char rep[1000];
 			strcpy(rep,
-					"HTTP/1.1 200 OK\nContent-length: 47\nContent-Type: text/html\n\n<html><body><H1>Hello hell</H1></body></html>");
+					"HTTP/1.1 200 OK\nContent-length: 47\nContent-Type: text/html\n\n<html><body><H1>Hello World</H1></body></html>");
 
 			int c = send(connected, &rep, sizeof(rep), 0);
 			printf("\nSTATUS:%d", c);

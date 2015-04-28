@@ -67,35 +67,22 @@ void server(int port_number) {
 	cli_size = sizeof(struct sockaddr_in);
 	while (1) {
 		connected = accept(sock, (struct sockaddr *) &client_addr, &cli_size);
-		if (connected < 0) {
+		if(connected < 0){
 			perror("Error on accept");
 		}
-		pid = fork();
-		if (pid < 0) {
-			perror("Error on fork");
-		}
-		if (pid == 0) {
-			// do useful work
-			close(sock);
-			char req[1000];
-			recv(connected, req, sizeof(req), 0);
-			printf("\n Received:%s", req);
-			char rep[1000];
-			strcpy(rep,
-					"HTTP/1.1 200 OK\nContent-length: 47\nContent-Type: text/html\n\n<html><body><H1>Hello hell</H1></body></html>");
+		char kk[9999];
+		recv(connected, kk, sizeof(kk), 0);
+		printf("\n Received:%s", kk);
 
-			int c = send(connected, &rep, sizeof(rep), 0);
-			printf("\nSTATUS:%d", c);
+		char xx[9999];
+		strcpy(xx,
+				"HTTP/1.1 200 OK\nContent-length: 47\nContent-Type: text/html\n\n<html><body><H1>Hello World</H1></body></html>");
 
-			printf("\nSent : %s\n", rep);
-			close(connected);
-			exit(EXIT_SUCCESS);
+		int c = send(connected, &xx, sizeof(xx), 0);
+		printf("\nSTATUS:%d", c);
 
-		} else {
-			// close socket in parent
-			close(connected);
-		}
-		// close socket
+		printf("\nSent : %s\n", xx);
+
+		close(sock);
 	}
-	close(sock);
 }

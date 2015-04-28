@@ -1,0 +1,6 @@
+20:14:54 **** Incremental Build of configuration Debug for project udpChat ****
+make all 
+make: Nothing to be done for `all'.
+
+20:14:54 Build Finished (took 66ms)
+

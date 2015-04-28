@@ -1,0 +1,6 @@
+20:17:43 **** Incremental Build of configuration Debug for project HTTPServer ****
+make all 
+make: Nothing to be done for `all'.
+
+20:17:43 Build Finished (took 65ms)
+

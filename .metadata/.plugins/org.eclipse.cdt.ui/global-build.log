@@ -1,0 +1,22 @@
+20:18:24 **** Build of configuration Debug for project findProcesses ****
+make all 
+Building file: ../src/findProcesses.cpp
+Invoking: GCC C++ Compiler
+g++ -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/findProcesses.d" -MT"src/findProcesses.d" -o "src/findProcesses.o" "../src/findProcesses.cpp"
+../src/findProcesses.cpp: In function ‘int get_TTY_of_proc(pid_t)’:
+../src/findProcesses.cpp:88:6: warning: unused variable ‘fd’ [-Wunused-variable]
+  int fd = open(filename, O_RDONLY);
+      ^
+../src/findProcesses.cpp:89:9: warning: ‘TTY’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+  return TTY;
+         ^
+Finished building: ../src/findProcesses.cpp
+ 
+Building target: findProcesses
+Invoking: GCC C++ Linker
+g++  -o "findProcesses"  ./src/findProcesses.o   
+Finished building target: findProcesses
+ 
+20:18:36 **** Incremental Build of configuration Debug for project findProcesses ****
+make all 
+make: Nothing to be done for `all'.

@@ -1,0 +1,86 @@
+/*
+ ============================================================================
+ Name        : HTTPServer.c
+ Author      : Andrei
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+#include<sys/socket.h>
+#include<sys/types.h>
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<errno.h>
+#include <netinet/in.h>
+
+int main() {
+
+	while (1) {
+		server();
+	}
+
+	return 0;
+}
+
+void server() {
+
+	int sock, connected, bytes_recieved, true = 1;
+	char send_data[1024], recv_data[1024];
+
+	struct sockaddr_in server_addr, client_addr;
+	int sin_size;
+
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		perror("Socket");
+		exit(1);
+	}
+
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &true, sizeof(int)) == -1) {
+		perror("Setsockopt");
+		exit(1);
+	}
+
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(8080);
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	bzero(&(server_addr.sin_zero), 8);
+	memset(&(server_addr.sin_zero), 0, 8);
+	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
+			== -1) {
+		perror("Unable to bind");
+		exit(1);
+	}
+
+	if (listen(sock, 5) == -1) {
+		perror("Listen");
+		exit(1);
+	}
+
+	printf("\n\nMyHTTPServer waiting on port 8080");
+	fflush(stdout);
+
+	sin_size = sizeof(struct sockaddr_in);
+
+	connected = accept(sock, (struct sockaddr *) &client_addr, &sin_size);
+
+	//printf("\n I got a connection from (%s , %d)",
+		//	inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
+	char kk[9999];
+	recv(connected, kk, sizeof(kk), 0);
+	printf("\n Received:%s", kk);
+
+	char xx[9999];
+	strcpy(xx,
+			"HTTP/1.1 200 OK\nContent-length: 47\nContent-Type: text/html\n\n<html><body><H1>Hello World</H1></body></html>");
+
+	int c = send(connected, &xx, sizeof(xx), 0);
+	printf("\nSTATUS:%d", c);
+
+	printf("\nSent : %s\n", xx);
+
+	close(sock);
+}

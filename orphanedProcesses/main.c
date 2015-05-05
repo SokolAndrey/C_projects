@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
 		read_config();
 		syslog(LOG_INFO, "LISTENING DEMON IS STARTED\n");
 		for (;;) {
-			syslog(LOG_INFO, "сейчас я тут %s", dir);
 			read_dir(dir);
 			changeTimeOfLastCheck();
 			sleep(reading_period);

@@ -9,28 +9,52 @@
  */
 #include<sys/socket.h>
 #include<sys/types.h>
+#include <sys/stat.h>
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
 #include<unistd.h>
 #include<errno.h>
-#include <netinet/in.h>
+#include<netinet/in.h>
+#include <dirent.h>
+#include <syslog.h>
+#include <signal.h>
 
 void server();
+FILE *file;
 
 int main(int argc, char *argv[]) {
-	int port_number = 8080;
-	if (argc > 1) {
-		port_number = atoi(argv[2]);
-	}
-	server(port_number);
+	pid_t pid, sid;
+	pid = fork();
+	switch (pid) {
+	case 0:
+		sid = setsid();
+		umask(0);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+		openlog("http server", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+		int port_number = 8084;
+		if (argc > 1) {
+			port_number = atoi(argv[2]);
+		}
+		syslog(LOG_INFO, "server works on %d port", port_number);
+		server(port_number);
+		break;
 
+	case -1:
+		exit(EXIT_FAILURE);
+		break;
+	default:
+		exit(EXIT_SUCCESS);
+		break;
+	}
 	return 0;
 }
 
 void server(int port_number) {
 	int sock, connected, pid, true = 1;
-	char send_data[1024], recv_data[1024];
+	//char send_data[1024], recv_data[1024];
 
 	struct sockaddr_in server_addr, client_addr;
 	int cli_size;
@@ -81,13 +105,14 @@ void server(int port_number) {
 			recv(connected, req, sizeof(req), 0);
 			printf("\n Received:%s", req);
 			char rep[1000];
-			strcpy(rep,
-					"HTTP/1.1 200 OK\nContent-length: 47\nContent-Type: text/html\n\n<html><body><H1>Hello hell</H1></body></html>");
-
-			int c = send(connected, &rep, sizeof(rep), 0);
-			printf("\nSTATUS:%d", c);
-
-			printf("\nSent : %s\n", rep);
+			file = fopen("/home/andrey/University/Telematiks/Linux/index.html",
+					"r");
+			char content[1000];
+			strcpy(rep, "HTTP/1.1 200 OK\nContent-Type: text/html\n\n");
+			int c = send(connected, &rep, strlen(rep), 0);
+			while(fgets(content,sizeof(content),file) != NULL){
+				send(connected, &content,strlen(content),0);
+			}
 			close(connected);
 			exit(EXIT_SUCCESS);
 
@@ -95,7 +120,27 @@ void server(int port_number) {
 			// close socket in parent
 			close(connected);
 		}
-		// close socket
 	}
 	close(sock);
+}
+
+void not_found(int client) {
+	char buf[1024];
+
+	sprintf(buf, "HTTP/1.0 404 Page Not Found\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "Server: hochu_na_more\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "Content-Type: text/html\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "<HTML><HEAD><TITLE>Page not found!\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "</TITLE></HEAD>\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "<BODY><P>Page not found!\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "</BODY></HTML>\r\n");
+	send(client, buf, strlen(buf), 0);
 }

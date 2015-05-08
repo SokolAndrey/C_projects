@@ -1,30 +1,6 @@
-05:04:23 **** Incremental Build of configuration Debug for project HTTPServer ****
+16:07:48 **** Incremental Build of configuration Debug for project HTTPServer ****
 make all 
-Building file: ../src/HTTPServer.c
-Invoking: Cross GCC Compiler
-gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/HTTPServer.d" -MT"src/HTTPServer.d" -o "src/HTTPServer.o" "../src/HTTPServer.c"
-../src/HTTPServer.c: In function ‘main’:
-../src/HTTPServer.c:27:13: warning: variable ‘sid’ set but not used [-Wunused-but-set-variable]
-  pid_t pid, sid;
-             ^
-../src/HTTPServer.c: In function ‘server’:
-../src/HTTPServer.c:93:36: warning: pointer targets in passing argument 3 of ‘accept’ differ in signedness [-Wpointer-sign]
-   connected = accept(sock, (struct sockaddr *) &client_addr, &cli_size);
-                                    ^
-In file included from ../src/HTTPServer.c:10:0:
-/usr/include/x86_64-linux-gnu/sys/socket.h:243:12: note: expected ‘socklen_t * __restrict__’ but argument is of type ‘int *’
- extern int accept (int __fd, __SOCKADDR_ARG __addr,
-            ^
-../src/HTTPServer.c:112:8: warning: unused variable ‘c’ [-Wunused-variable]
-    int c = send(connected, &rep, strlen(rep), 0);
-        ^
-Finished building: ../src/HTTPServer.c
- 
-Building target: HTTPServer
-Invoking: Cross GCC Linker
-gcc  -o "HTTPServer"  ./src/HTTPServer.o   
-Finished building target: HTTPServer
- 
+make: Nothing to be done for `all'.
 
-05:04:25 Build Finished (took 1s.488ms)
+16:07:48 Build Finished (took 66ms)
 

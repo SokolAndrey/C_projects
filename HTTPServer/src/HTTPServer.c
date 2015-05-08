@@ -22,13 +22,14 @@
 
 void server();
 FILE *file;
+char rootFolder[] = "/home/andrey/University/Telematiks/Linux/";
 
 int main(int argc, char *argv[]) {
-	pid_t pid, sid;
+	pid_t pid;
 	pid = fork();
 	switch (pid) {
 	case 0:
-		sid = setsid();
+		setsid();
 		umask(0);
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
@@ -54,7 +55,6 @@ int main(int argc, char *argv[]) {
 
 void server(int port_number) {
 	int sock, connected, pid, true = 1;
-	//char send_data[1024], recv_data[1024];
 
 	struct sockaddr_in server_addr, client_addr;
 	int cli_size;
@@ -97,21 +97,43 @@ void server(int port_number) {
 		pid = fork();
 		if (pid < 0) {
 			perror("Error on fork");
+			exit(EXIT_FAILURE);
 		}
 		if (pid == 0) {
 			// do useful work
 			close(sock);
 			char req[1000];
 			recv(connected, req, sizeof(req), 0);
-			printf("\n Received:%s", req);
 			char rep[1000];
-			file = fopen("/home/andrey/University/Telematiks/Linux/index.html",
-					"r");
-			char content[1000];
-			strcpy(rep, "HTTP/1.1 200 OK\nContent-Type: text/html\n\n");
-			int c = send(connected, &rep, strlen(rep), 0);
-			while(fgets(content,sizeof(content),file) != NULL){
-				send(connected, &content,strlen(content),0);
+			char link[100];
+			char absLink[1000];
+			strcat(absLink, rootFolder);
+			if (strstr(req, "GET") != NULL) {
+				int i = 0;
+				while (req[i] != 'T')
+					i++;
+				i++;
+				i++;
+				int j = 0;
+				while (isspace(req[i]) == 0) {
+					link[j++] = req[i++];
+				};
+			}
+			if (strcmp("/", link) == 0) {
+				strcat(absLink, "index.html");
+			} else {
+				strcat(absLink, link);
+			};
+			file = fopen(absLink, "r");
+			if (file == NULL) {
+				not_found(connected);
+			} else {
+				char content[1000];
+				strcpy(rep, "HTTP/1.1 200 OK\nContent-Type: text/html\n\n");
+				send(connected, &rep, strlen(rep), 0);
+				while (fgets(content, sizeof(content), file) != NULL) {
+					send(connected, &content, strlen(content), 0);
+				}
 			}
 			close(connected);
 			exit(EXIT_SUCCESS);

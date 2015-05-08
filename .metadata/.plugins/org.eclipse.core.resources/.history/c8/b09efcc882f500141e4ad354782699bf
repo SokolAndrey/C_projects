@@ -1,0 +1,168 @@
+/*
+ ============================================================================
+ Name        : HTTPServer.c
+ Author      : Andrei
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+#include<sys/socket.h>
+#include<sys/types.h>
+#include <sys/stat.h>
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<errno.h>
+#include<netinet/in.h>
+#include <dirent.h>
+#include <syslog.h>
+#include <signal.h>
+
+void server();
+FILE *file;
+char rootFolder[] = "/home/andrey/University/Telematiks/Linux/";
+
+int main(int argc, char *argv[]) {
+	pid_t pid;
+	pid = fork();
+	switch (pid) {
+	case 0:
+		setsid();
+		umask(0);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+		openlog("http server", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+		int port_number = 8084;
+		if (argc > 1) {
+			port_number = atoi(argv[2]);
+		}
+		syslog(LOG_INFO, "server works on %d port", port_number);
+		server(port_number);
+		break;
+
+	case -1:
+		exit(EXIT_FAILURE);
+		break;
+	default:
+		exit(EXIT_SUCCESS);
+		break;
+	}
+	return 0;
+}
+
+void server(int port_number) {
+	int sock, connected, pid, true = 1;
+	//char send_data[1024], recv_data[1024];
+
+	struct sockaddr_in server_addr, client_addr;
+	int cli_size;
+
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		perror("Socket");
+		exit(1);
+	}
+
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &true, sizeof(int)) == -1) {
+		perror("Setsockopt");
+		exit(1);
+	}
+
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(port_number);
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	bzero(&(server_addr.sin_zero), 8);
+	memset(&(server_addr.sin_zero), 0, 8);
+	if (bind(sock, (struct sockaddr *) &server_addr, sizeof(struct sockaddr))
+			== -1) {
+		perror("Unable to bind");
+		exit(1);
+	}
+
+	if (listen(sock, 5) == -1) {
+		perror("Listen");
+		exit(1);
+	}
+
+	printf("\n\nMyHTTPServer waiting on port %d", port_number);
+	fflush(stdout);
+
+	cli_size = sizeof(struct sockaddr_in);
+	while (1) {
+		connected = accept(sock, (struct sockaddr *) &client_addr, &cli_size);
+		if (connected < 0) {
+			perror("Error on accept");
+		}
+		pid = fork();
+		if (pid < 0) {
+			perror("Error on fork");
+			exit(EXIT_FAILURE);
+		}
+		if (pid == 0) {
+			// do useful work
+			close(sock);
+			char req[1000];
+			recv(connected, req, sizeof(req), 0);
+			char rep[1000];
+			char link[100];
+			char absLink[1000];
+			strcat(absLink, rootFolder);
+			if (strstr(req, "GET") != NULL) {
+				int i = 0;
+				while (req[i] != 'T')
+					i++;
+				i++;
+				i++;
+				int j = 0;
+				while (isspace(req[i]) == 0) {
+					link[j++] = req[i++];
+				};
+			}
+			if (strcmp("/", link) == 0) {
+				strcat(absLink, "index.html");
+			} else {
+				strcat(absLink, link);
+			};
+			file = fopen(absLink, "r");
+			if(file == NULL){
+				not_found(connected);
+			}
+			char content[1000];
+			strcpy(rep, "HTTP/1.1 200 OK\nContent-Type: text/html\n\n");
+			send(connected, &rep, strlen(rep), 0);
+			while (fgets(content, sizeof(content), file) != NULL) {
+				send(connected, &content, strlen(content), 0);
+			}
+			close(connected);
+			exit(EXIT_SUCCESS);
+
+		} else {
+			// close socket in parent
+			close(connected);
+		}
+	}
+	close(sock);
+}
+
+void not_found(int client) {
+	char buf[1024];
+
+	sprintf(buf, "HTTP/1.0 404 Page Not Found\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "Server: hochu_na_more\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "Content-Type: text/html\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "<HTML><HEAD><TITLE>Page not found!\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "</TITLE></HEAD>\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "<BODY><P>Page not found!\r\n");
+	send(client, buf, strlen(buf), 0);
+	sprintf(buf, "</BODY></HTML>\r\n");
+	send(client, buf, strlen(buf), 0);
+}

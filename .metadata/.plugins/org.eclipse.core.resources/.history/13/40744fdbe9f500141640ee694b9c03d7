@@ -19,7 +19,6 @@
 #include <dirent.h>
 #include <syslog.h>
 #include <signal.h>
-#include <sys/wait.h>
 
 void server();
 FILE *file;
@@ -143,10 +142,6 @@ void server(int port_number) {
 
 		} else {
 			// close socket in parent
-			int status;
-			if(wait(&status) == -1){
-				syslog(LOG_INFO, "wait err");
-			}
 			close(connected);
 		}
 	}

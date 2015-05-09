@@ -19,13 +19,12 @@
 #include <dirent.h>
 #include <syslog.h>
 #include <signal.h>
-#include <sys/wait.h>
 
 void server();
 FILE *file;
 char rootFolder[] = "/home/andrey/University/Telematiks/Linux/";
 
-void not_found(int clnt);
+void not_found(int client);
 
 int main(int argc, char *argv[]) {
 	pid_t pid;
@@ -143,33 +142,29 @@ void server(int port_number) {
 
 		} else {
 			// close socket in parent
-			int status;
-			if(wait(&status) == -1){
-				syslog(LOG_INFO, "wait err");
-			}
 			close(connected);
 		}
 	}
 	close(sock);
 }
 
-void not_found(int clnt) {
+void not_found(int client) {
 	char buf[1024];
 
 	sprintf(buf, "HTTP/1.0 404 Page Not Found\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "Server: hochu_na_more\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "Content-Type: text/html\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "<HTML><HEAD><TITLE>Page not found!\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "</TITLE></HEAD>\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "<BODY><P>Page not found!\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "</BODY></HTML>\r\n");
-	send(clnt, buf, strlen(buf), 0);
+	send(client, buf, strlen(buf), 0);
 }

@@ -144,9 +144,7 @@ void server(int port_number) {
 		} else {
 			// close socket in parent
 			int status;
-			if(wait(&status) == -1){
-				syslog(LOG_INFO, "wait err");
-			}
+			waitpid(pid, &status, WUNTRACED);
 			close(connected);
 		}
 	}
